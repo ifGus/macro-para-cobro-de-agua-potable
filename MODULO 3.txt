@@ -1,0 +1,55 @@
+Sub llenarTablaTotalesMes() ' Copia los datos de las cuentas canceldas
+    Dim indice As Integer
+    indice = 2
+    Dim item As Byte
+    item = 7 ' 7 es el primer item con valor válido a copiar
+    While indice <= Sheets("MENU").Range("E8") + 1
+        While item <= 16 And Sheets("DATOS GENERALES").Cells(indice, 18) = "CANCELADO"
+            'Sheets("INGRESOS MES").Unprotect ("mundolibre")
+            Sheets("INGRESOS MES").Cells(indice, item) = Sheets("DATOS GENERALES").Cells(indice, item)
+            'Sheets("INGRESOS MES").Protect ("mundolibre")
+            item = item + 1
+        Wend
+        indice = indice + 1
+        item = 7
+    Wend
+End Sub
+
+Sub sumaTotalesPagados()
+    Dim total As Double
+    Dim indice As Integer
+    Dim item As Byte
+    total = 0
+    indice = 2
+    item = 7
+    
+    While item <= 17 ' 19 es el ultimo item a sumar (total de totales)
+    
+        While indice <= Sheets("MENU").Range("E8") + 1 ' Cuenta el total por colunmas
+            total = total + Sheets("INGRESOS MES").Cells(indice, item)
+            indice = indice + 1
+        Wend
+            Sheets("INGRESOS MES").Cells((Sheets("MENU").Range("E8") + 2), item) = total
+            total = 0
+            indice = 2
+            item = item + 1
+    Wend
+    End Sub
+    Sub limpiarContenido() ' oJO NO SE ESTA USANDO es ineficiente
+        Dim indice, item As Integer
+        indice = 2
+        item = 7
+        While indice <= Sheets("MENU").Range("E8").Value + 2 ' mas dos que inclulle el ajuste de los totales
+            While item <= 16
+                Sheets("INGRESOS MES").Cells(indice, item) = ""
+                item = item + 1
+            Wend
+            item = 7
+            indice = indice + 1
+        Wend
+    End Sub
+
+    Sub actualizarTablaTotales()
+        llenarTablaTotalesMes
+        sumaTotalesPagados
+    End Sub

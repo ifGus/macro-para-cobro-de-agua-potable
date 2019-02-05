@@ -1,0 +1,205 @@
+' MODULO 1
+'Option Private Module
+
+Sub llenaVentana()
+    Sheets("MENU").Cells(1, 1) = Sheets("DATOS GENERALES").Cells(320, 1)
+End Sub
+
+Sub buscaID()
+
+    If Sheets("MENU").Range("E10") <> 0 And Sheets("MENU").Range("E10") <= Sheets("MENU").Range("E8") Then
+    Dim buscado As Integer
+    buscado = (Sheets("MENU").Range("E10").Value) + 1
+
+    Sheets("MENU").Unprotect ("mundolibre") 'Desprotege la hoja
+
+    Sheets("MENU").Range("P3") = Sheets("DATOS GENERALES").Cells(buscado, 1)
+    Sheets("MENU").Range("K5") = Sheets("DATOS GENERALES").Cells(buscado, 3)
+    Sheets("MENU").Range("L5") = Sheets("DATOS GENERALES").Cells(buscado, 4)
+    Sheets("MENU").Range("M5") = Sheets("DATOS GENERALES").Cells(buscado, 5) ' Nombre
+    
+    Sheets("MENU").Range("P4") = Sheets("DATOS GENERALES").Cells(buscado, 6) ' AC
+    Sheets("MENU").Range("M7") = Sheets("DATOS GENERALES").Cells(buscado, 7) ' Deuda anterior mes
+    Sheets("MENU").Range("M8") = Sheets("DATOS GENERALES").Cells(buscado, 8) ' Reinstalacion
+    Sheets("MENU").Range("M9") = Sheets("DATOS GENERALES").Cells(buscado, 9) ' Consumo agua
+    Sheets("MENU").Range("M10") = Sheets("DATOS GENERALES").Cells(buscado, 10) + Sheets("DATOS GENERALES").Cells(buscado, 11) 'mora
+    Sheets("MENU").Range("M11") = Sheets("DATOS GENERALES").Cells(buscado, 12) ' Retraso reunion
+    Sheets("MENU").Range("M12") = Sheets("DATOS GENERALES").Cells(buscado, 13) ' Falta reunion
+    Sheets("MENU").Range("M13") = Sheets("DATOS GENERALES").Cells(buscado, 14) + Sheets("DATOS GENERALES").Cells(buscado, 15) ' Multa trabajos
+    Sheets("MENU").Range("M14") = Sheets("DATOS GENERALES").Cells(buscado, 16) ' Otros
+    Sheets("MENU").Range("M15") = Sheets("DATOS GENERALES").Cells(buscado, 17) ' Total
+    Sheets("MENU").Range("N15") = Sheets("DATOS GENERALES").Cells(buscado, 18) ' ESTADO
+
+    Sheets("MENU").Range("E10").ClearContents
+    Sheets("MENU").Range("E11").ClearContents
+    Sheets("MENU").Range("E12").ClearContents
+    Sheets("MENU").Range("E13").ClearContents
+    Sheets("MENU").Range("E14").ClearContents
+    
+    Sheets("MENU").Protect ("mundolibre") ' Protege la hoja
+    
+    Else
+        If Sheets("MENU").Range("E11") <> 0 Then ' Si numero de medidor distinto de vacio
+            buscarMedidor
+            Else
+                If Sheets("MENU").Range("E12") <> 0 Then ' Si apellido AP es distinto de vacio
+                    buscarPorNombre
+                    Else
+                        If Sheets("MENU").Range("E10") > Sheets("MENU").Range("E8") Then
+                            MsgBox "El Socio no existe!!!", vbInformation, "Valor ingresado fuera de rango"
+                            limpiarResultadosAnterioresMenu
+                        Else
+                            MsgBox "Complete los campos", vbInformation, "Vacio"
+                            limpiarResultadosAnterioresMenu
+                        End If
+                        
+                End If
+        End If
+        
+        'MsgBox "No se encontraron coincidencias", vbInformation, "No existe"
+    End If
+    PintarDeudaCancelada
+    
+    
+End Sub
+
+Sub CancelarCuenta() ' Pagar
+    Dim buscado As Integer
+    buscado = (Sheets("MENU").Range("P3").Value) + 1
+    Sheets("INGRESOS MES").Unprotect ("mundolibre")
+    If buscado > 1 Then 'Para que no se pueda modificar el encabezado de item
+        Sheets("DATOS GENERALES").Unprotect ("mundolibre") ' Desprotege la hoja
+        Sheets("DATOS GENERALES").Cells(buscado, 18) = "CANCELADO"
+        Sheets("DATOS GENERALES").Cells(buscado, 18).Interior.ColorIndex = 4 ' pinta la celda
+        Sheets("MENU").Unprotect ("mundolibre")
+        Sheets("MENU").Range("N15") = Sheets("DATOS GENERALES").Cells(buscado, 18) ' Estado
+        Sheets("DATOS GENERALES").Cells(buscado, 19) = Now ' Carga la fecha
+        Sheets("MENU").Protect ("mundolibre")
+        PintarDeudaCancelada
+            ' Empiesa a registrar los datos en la tabla de ingresos
+            Dim item As Byte
+            item = 7
+            
+            While item <= 16
+                Sheets("INGRESOS MES").Cells(buscado, item) = Sheets("DATOS GENERALES").Cells(buscado, item)
+                item = item + 1
+            Wend
+            ' Termina envio de datos
+                sumaTotalesPagados ' realiza la sumatoria en la tabla ingresos mes
+            Sheets("DATOS GENERALES").Protect ("mundolibre") ' protege la hoja
+        Else
+        MsgBox "Datos nulos..."
+    End If
+    actualizarTablaTotales
+    Sheets("INGRESOS MES").Protect ("mundolibre")
+    'Sheets("DATOS GENERALES").Protect ("mundolibre")
+End Sub
+
+Sub NoCancelarCuenta() ' No pagar
+    Dim buscado As Integer
+    buscado = (Sheets("MENU").Range("P3").Value) + 1
+    Sheets("INGRESOS MES").Unprotect ("mundolibre")
+    If buscado > 1 Then 'Para que no se pueda modificar el encabezado de item
+        Sheets("DATOS GENERALES").Unprotect ("mundolibre") ' Desprotege la hoja
+        Sheets("DATOS GENERALES").Cells(buscado, 18) = "DEUDA"
+        Sheets("DATOS GENERALES").Cells(buscado, 18).Interior.ColorIndex = 3 ' pinta la celda
+        Sheets("MENU").Unprotect ("mundolibre")
+        Sheets("MENU").Range("N15") = Sheets("DATOS GENERALES").Cells(buscado, 18)
+        Sheets("DATOS GENERALES").Cells(buscado, 19) = "" ' Borra la fecha en caso de fallo
+        Sheets("MENU").Protect ("mundolibre")
+        PintarDeudaCancelada
+            ' Empiesa a registrar los datos en la tabla de ingresos
+            Dim item As Byte
+            item = 7
+            While item <= 16
+                Sheets("INGRESOS MES").Cells(buscado, item) = ""
+                item = item + 1
+            Wend
+            ' Termina Eliminar datos de los totales
+                sumaTotalesPagados ' realiza la sumatoria en la tabla ingresos mes
+        Sheets("DATOS GENERALES").Protect ("mundolibre") ' Protege la hoja
+        Else
+        MsgBox "Datos nulos..."
+    End If
+    
+    actualizarTablaTotales
+    
+    Sheets("INGRESOS MES").Protect ("mundolibre")
+End Sub
+
+Sub PintarDeudaCancelada() 'Solo verifica si la deuda fue cancelada, y la pinta de rojo o verde EN LA VENTANA MENU
+    Sheets("MENU").Unprotect ("mundolibre")
+        
+        If (Sheets("MENU").Range("N15") = "CANCELADO") Then
+            Sheets("MENU").Range("N15").Font.ColorIndex = 4
+        Else
+        Sheets("MENU").Range("N15").Font.ColorIndex = 3
+        End If
+    Sheets("MENU").Protect ("mundolibre")
+End Sub
+
+
+Sub buscarPorNombre() 'Busca por nombre
+    'E12, E13, E14
+    Dim idCuenta As Integer
+    Dim encontrado As Boolean
+    idCuenta = 2
+    encontrado = False
+        While idCuenta <= Sheets("MENU").Range("E8") And encontrado = False
+            If Sheets("DATOS GENERALES").Cells(idCuenta, 3) = Sheets("MENU").Range("E12") And Sheets("DATOS GENERALES").Cells(idCuenta, 4) = Sheets("MENU").Range("E13") And Sheets("DATOS GENERALES").Cells(idCuenta, 5) = Sheets("MENU").Range("E14") Then
+                Sheets("MENU").Unprotect ("mundolibre")
+                Sheets("MENU").Range("E10") = idCuenta - 1
+                Sheets("MENU").Protect ("mundolibre")
+                encontrado = True
+            End If
+            idCuenta = idCuenta + 1
+        Wend
+         If encontrado = False Then
+                    MsgBox "No se encontro al Socio", vbInformation, "No existe"
+         End If
+    
+End Sub
+
+Sub buscarMedidor() 'Busca por Número de medidor
+    Dim idCuenta As Integer
+    Dim encontrado As Boolean
+    idCuenta = 2
+    encontrado = False
+        While idCuenta <= Sheets("MENU").Range("E8") And encontrado = False
+            If Sheets("DATOS GENERALES").Cells(idCuenta, 2) = Sheets("MENU").Range("E11") Then
+                Sheets("MENU").Unprotect ("mundolibre")
+                Sheets("MENU").Range("E10") = idCuenta - 1
+                Sheets("MENU").Protect ("mundolibre")
+                encontrado = True
+            End If
+            idCuenta = idCuenta + 1
+        Wend
+         If encontrado = False Then
+                    MsgBox "No se encontro el medidor", vbInformation, "No existe"
+         End If
+End Sub
+
+Sub limpiarResultadosAnterioresMenu()
+    Sheets("MENU").Unprotect ("mundolibre")
+    
+    Sheets("MENU").Range("P3").ClearContents
+    Sheets("MENU").Range("P4").ClearContents
+    Sheets("MENU").Range("K5").ClearContents
+    Sheets("MENU").Range("L5").ClearContents
+    Sheets("MENU").Range("M5").ClearContents
+    Sheets("MENU").Range("M6").ClearContents
+    Sheets("MENU").Range("M7").ClearContents
+    Sheets("MENU").Range("M8").ClearContents
+    Sheets("MENU").Range("M9").ClearContents
+    Sheets("MENU").Range("M10").ClearContents
+    Sheets("MENU").Range("M11").ClearContents
+    Sheets("MENU").Range("M12").ClearContents
+    Sheets("MENU").Range("M13").ClearContents
+    Sheets("MENU").Range("M14").ClearContents
+    Sheets("MENU").Range("M15").ClearContents
+    Sheets("MENU").Range("N15").ClearContents
+    
+    Sheets("MENU").Protect ("mundolibre")
+End Sub
+
+

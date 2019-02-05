@@ -1,0 +1,17 @@
+deuda = deuda
+mora = multaMoraDia + multaMoraMes
+consumo agua = csmAgua
+falta reunión = faltaReunion
+Retraso reunion = retrasoReunion
+Multra trabajos = multaTrabajosDia + multaTrabajosMedioDia
+Reinstalación = Reinstalacion
+Otros = otros (otros = otrosTodos + otrosFaltasDesfilesOtros)
+Total = Total
+
+///////
+Sub Pruebas()
+Dim s As Integer
+s = 78
+    Sheets("Hoja4").Range("A3") = "=A1+A2" ' hacer una formula
+    Sheets("Hoja4").Range("A4") = "Esta es una prueba " & s ' Concatenar
+End Sub
