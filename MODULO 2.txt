@@ -1,9 +1,0 @@
-' navegacion
-Sub verTabla()
-    Sheets("DATOS GENERALES").Select
-    Sheets("DATOS GENERALES").Range(Cells(Sheets("MENU").Range("P3") + 1, 1), Cells(Sheets("MENU").Range("P3") + 1, 19)).Select
-End Sub
-Sub verMenu()
-    Sheets("MENU").Select
-End Sub
-
